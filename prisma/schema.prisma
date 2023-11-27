@@ -1,0 +1,145 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Role {
+  id   Int    @id @default(autoincrement())
+  name String
+  user User?
+
+  @@map("roles")
+}
+
+model User {
+  id                Int            @id @default(autoincrement())
+  username          String
+  email             String
+  password          String
+  resetToken        String?        @map("reset_token")
+  verificationToken String?        @map("verification_token")
+  roleId            Int            @unique @map("role_id")
+  role              Role           @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  profile           Profile?
+  notification      Notification[]
+  review            Review[]
+  transaction       Transaction[]
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Profile {
+  id        Int      @id @default(autoincrement())
+  name      String
+  phone     String?
+  picture   String?
+  city      String?
+  province  String?
+  country   String?
+  userId    Int      @unique @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("profiles")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  message   String
+  time      DateTime
+  isRead    Boolean  @map("is_reads")
+  userId    Int      @unique @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("notifications")
+}
+
+model Review {
+  id       Int      @id @default(autoincrement())
+  ranting  String?
+  feedback String?
+  date     DateTime @default(now())
+  userId   Int      @unique @map("user_id")
+  courseId Int      @unique @map("course_id")
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+model Transaction {
+  id                Int                 @id @default(autoincrement())
+  userId            Int                 @unique @map("user_id")
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  detailTransaction DetailTransaction[]
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  @@map("transactions")
+}
+
+model DetailTransaction {
+  id            Int           @id @default(autoincrement())
+  courseId      Int           @unique @map("course_id")
+  transactionId Int           @unique @map("transaction_id")
+  paymentMethod PaymentMethod @default(PREMIUM)
+  paymentStatus Boolean
+  course        Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  transaction   Transaction   @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@map("details_transactions")
+}
+
+model Course {
+  id                Int                 @id @default(autoincrement())
+  name              String
+  courseCode        String              @map("course_code")
+  isPremium         Boolean             @map("is_premium")
+  categoryId        Int                 @unique @map("category_id")
+  levelId           Int                 @unique @map("level_id")
+  harga             String
+  description       String?
+  category          Category            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  level             Level               @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  review            Review[]
+  detailTransaction DetailTransaction[]
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  @@map("courses")
+}
+
+model Category {
+  id     Int      @id @default(autoincrement())
+  name   String
+  course Course[]
+
+  @@map("categories")
+}
+
+model Level {
+  id     Int      @id @default(autoincrement())
+  name   String
+  course Course[]
+
+  @@map("levels")
+}
+
+enum PaymentMethod {
+  PREMIUM
+  FREE
+}
