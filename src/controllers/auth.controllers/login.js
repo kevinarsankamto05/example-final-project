@@ -4,36 +4,41 @@ const { users } = require("../../models"),
 module.exports = {
   login: async (req, res) => {
     try {
-      const user = await users.findUnique({
+      const user = await users.findOne({
         where: {
           email: req.body.email,
         },
       });
 
-      if (!user)
+      if (!user) {
         return res.status(200).json(utils.apiError("Email not registered"));
+      }
 
       const verifyPassword = await utils.verifyHashedData(
         req.body.password,
         user.password
       );
 
-      if (!verifyPassword)
+      if (!verifyPassword) {
         return res.status(409).json(utils.apiError("Wrong Password"));
+      }
 
       const payload = { id: user.id, email: user.email };
       const token = utils.createJwt(payload);
+
+      // Log successful login
+      console.log(`User with email ${user.email} logged in successfully.`);
 
       return res
         .status(200)
         .json(utils.apiSuccess("Login Successfully", token));
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return res.status(500).json(utils.apiError("Internal Server Error"));
     }
   },
 
-  me: async (req, res) => {
+  get: async (req, res) => {
     try {
       const user = await users.findUnique({
         where: {

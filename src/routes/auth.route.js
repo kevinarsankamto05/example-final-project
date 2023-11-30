@@ -1,12 +1,14 @@
 const express = require("express"),
+  router = express.Router(),
   schema = require("../validation/auth.schema"),
   validate = require("../middlewares/validation"),
   { verifyToken } = require("../middlewares/verfy.token"),
-  controller = require("../controllers/auth.controllers/login"),
-  router = express.Router();
+  authController = require("../controllers/auth.controllers/login"),
+  registerController = require("../controllers/auth.controllers/register");
 
 /* AUTH Route */
-router.post("/login", validate(schema.login), controller.login);
-router.get("/me", verifyToken, controller.me);
+router.post("/register", registerController.register);
+router.post("/login", validate(schema.login), authController.login);
+router.get("/get", verifyToken, authController.get);
 
 module.exports = router;
