@@ -101,4 +101,76 @@ module.exports = {
       return res.status(500).json(utils.apiError("Internal Server Error"));
     }
   },
+
+  getAllReview: async (req, res) => {
+    try {
+      const allReviews = await Review.findMany({
+        select: {
+          id: true,
+          nilai: true,
+          feedback: true,
+          user: {
+            select: {
+              username: true,
+            },
+          },
+          course: {
+            select: {
+              name: true,
+            },
+          },
+          ranting: {
+            select: {
+              totalRanting: true,
+            },
+          },
+        },
+      });
+
+      return res.status(200).json({
+        error: false,
+        message: "All reviews retrieved successfully",
+        data: allReviews,
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json(utils.apiError("Internal Server Error"));
+    }
+  },
+
+  getById: async (req, res) => {
+    try {
+      const courseId = req.params.id;
+      const data = await Review.findMany({
+        where: { courseId: Number(courseId) },
+        select: {
+          id: true,
+          nilai: true,
+          feedback: true,
+          user: {
+            select: {
+              username: true,
+            },
+          },
+          course: {
+            select: {
+              name: true,
+            },
+          },
+          ranting: {
+            select: {
+              totalRanting: true,
+            },
+          },
+        },
+      });
+      if (!data || data.length === 0)
+        return res.status(404).json({ message: "Not Found" });
+
+      return res.status(200).json({ data });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json(utils.apiError("Internal Server Error"));
+    }
+  },
 };
