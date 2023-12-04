@@ -67,16 +67,31 @@ model Notification {
 }
 
 model Review {
-  id       Int      @id @default(autoincrement())
-  ranting  String?
-  feedback String?
-  date     DateTime @default(now())
-  userId   Int      @unique @map("user_id")
-  courseId Int      @unique @map("course_id")
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  id        Int      @id @default(autoincrement())
+  nilai     Float?   @map("nilai_Ranting")
+  feedback  String?
+  userId    Int      @map("user_id")
+  courseId  Int      @map("course_id")
+  rantingId Int      @map("ranting_id")
+  date      DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  ranting   Ranting  @relation(fields: [rantingId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("reviews")
+}
+
+model Ranting {
+  id           Int      @id @default(autoincrement())
+  totalRanting Float?   @map("total_ranting")
+  rewie        Review[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("ranting")
 }
 
 model Transaction {
@@ -109,12 +124,12 @@ model Course {
   name              String
   courseCode        String              @map("course_code")
   isPremium         Boolean             @map("is_premium")
-  categoryId        Int                 @unique @map("category_id")
-  levelId           Int                 @unique @map("level_id")
+  categoryId        Int                 @map("category_id")
+  levelId           Int                 @map("level_id")
   harga             String
   description       String?
-  category          Category            @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  level             Level               @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  category          Category            @relation("course_categories", fields: [categoryId], references: [id], onDelete: Cascade)
+  level             Level               @relation("course_levels", fields: [levelId], references: [id], onDelete: Cascade)
   review            Review[]
   detailTransaction DetailTransaction[]
   createdAt         DateTime            @default(now()) @map("created_at")
@@ -126,7 +141,7 @@ model Course {
 model Category {
   id     Int      @id @default(autoincrement())
   name   String
-  course Course[]
+  course Course[] @relation("course_categories")
 
   @@map("categories")
 }
@@ -134,7 +149,7 @@ model Category {
 model Level {
   id     Int      @id @default(autoincrement())
   name   String
-  course Course[]
+  course Course[] @relation("course_levels")
 
   @@map("levels")
 }
