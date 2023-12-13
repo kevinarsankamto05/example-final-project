@@ -24,7 +24,7 @@ async function main() {
   });
 
   const category1 = await prisma.category.create({
-    data: { name: "Programming" },
+    data: { name: "Programming", image: "kevin.jpg" },
   });
   const category2 = await prisma.category.create({ data: { name: "Design" } });
 
